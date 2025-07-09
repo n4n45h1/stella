@@ -3,6 +3,31 @@ let capturedFaces = global.capturedFaces || [];
 
 export default function handler(req, res) {
     console.log('Faces API called:', req.method, req.url);
+    console.log('Current capturedFaces count:', capturedFaces.length);
+    
+    // グローバルから最新データを取得
+    capturedFaces = global.capturedFaces || [];
+    
+    // テスト用ダミーデータ（実際のデータがない場合）
+    if (capturedFaces.length === 0) {
+        capturedFaces = [{
+            id: 1,
+            timestamp: new Date().toISOString(),
+            images: [
+                "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjQ4MTIwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyMCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7jg4bjgrnjg4jnlLvlg4g8L3RleHQ+PC9zdmc+"
+            ],
+            system_info: {
+                ip_address: "127.0.0.1",
+                os: "Test OS",
+                browser: "Test Browser",
+                screen_resolution: "1920x1080",
+                language: "ja",
+                timezone: "Asia/Tokyo",
+                user_agent: "Test User Agent"
+            },
+            capture_count: 1
+        }];
+    }
     
     // CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -140,7 +165,10 @@ export default function handler(req, res) {
         <h1>🔍 キャプチャされた顔画像</h1>
         
         <div class="api-info">
-            <strong>API情報:</strong><br>
+            <strong>デバッグ情報:</strong><br>
+            • キャプチャ数: ${capturedFaces.length}件<br>
+            • グローバルデータ: ${global.capturedFaces ? global.capturedFaces.length : 0}件<br>
+            • 現在時刻: ${new Date().toLocaleString('ja-JP')}<br>
             • POST /api/capture - 画像を送信<br>
             • GET /api/capture - データを取得<br>
             • GET /api/faces - この画面を表示
@@ -168,12 +196,18 @@ export default function handler(req, res) {
                     </div>
                     
                     <div class="images-container">
-                        ${capture.images.map((image, index) => `
-                            <div class="image-item">
-                                <img src="${image}" alt="キャプチャ画像 ${index + 1}" />
-                                <div class="image-label">画像 ${index + 1}</div>
-                            </div>
-                        `).join('')}
+                        ${capture.images && capture.images.length > 0 ? 
+                            capture.images.map((image, index) => `
+                                <div class="image-item">
+                                    <img src="${image}" 
+                                         alt="キャプチャ画像 ${index + 1}" 
+                                         onerror="this.style.display='none'; this.nextElementSibling.innerHTML='画像読み込みエラー';" 
+                                         onload="console.log('画像読み込み成功: ${index + 1}');" />
+                                    <div class="image-label">画像 ${index + 1}</div>
+                                </div>
+                            `).join('') : 
+                            '<div style="color: #666; font-style: italic;">画像データがありません</div>'
+                        }
                     </div>
                     
                     <div class="system-info">
@@ -196,10 +230,19 @@ export default function handler(req, res) {
     </div>
     
     <script>
-        // 30秒ごとに自動更新
+        // 10秒ごとに自動更新（デバッグ用）
         setInterval(() => {
             location.reload();
-        }, 30000);
+        }, 10000);
+        
+        // 画像読み込み状況をコンソールに出力
+        document.addEventListener('DOMContentLoaded', () => {
+            const images = document.querySelectorAll('img');
+            console.log('画像要素数:', images.length);
+            images.forEach((img, i) => {
+                console.log('画像' + (i+1) + ' src長さ:', img.src.length);
+            });
+        });
     </script>
 </body>
 </html>
