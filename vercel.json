@@ -4,6 +4,20 @@
       "maxDuration": 30
     }
   },
+  "rewrites": [
+    {
+      "source": "/faces",
+      "destination": "/api/faces"
+    },
+    {
+      "source": "/test-faces",
+      "destination": "/api/test-faces"
+    },
+    {
+      "source": "/",
+      "destination": "/index.html"
+    }
+  ],
   "headers": [
     {
       "source": "/api/(.*)",

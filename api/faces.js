@@ -2,6 +2,8 @@
 let capturedFaces = global.capturedFaces || [];
 
 export default function handler(req, res) {
+    console.log('Faces API called:', req.method, req.url);
+    
     // CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
