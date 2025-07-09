@@ -1,0 +1,264 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background-color: #ffffff;
+    color: #333333;
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container {
+    max-width: 600px;
+    width: 100%;
+    padding: 40px;
+    text-align: center;
+}
+
+h1 {
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: #333333;
+    margin-bottom: 30px;
+    letter-spacing: -0.02em;
+}
+
+.description {
+    font-size: 1.1rem;
+    color: #666666;
+    margin-bottom: 50px;
+    font-weight: 400;
+}
+
+.security-check {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 40px;
+    margin: 40px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.check-content {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+}
+
+.loading-indicator {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid #e9ecef;
+    border-top: 3px solid #f48120;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.status-text {
+    font-size: 1rem;
+    color: #666666;
+    font-weight: 500;
+}
+
+.cloudflare-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.cloudflare-logo {
+    background: #f48120;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 12px;
+    letter-spacing: 1px;
+    font-family: Arial, sans-serif;
+}
+
+.cloudflare-subtext {
+    font-size: 10px;
+    color: #666666;
+    text-align: center;
+    line-height: 1.2;
+}
+
+.info-text {
+    font-size: 1rem;
+    color: #666666;
+    margin: 30px 0;
+    font-weight: 400;
+}
+
+.footer {
+    margin-top: 60px;
+    padding-top: 30px;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+}
+
+.ray-id {
+    font-size: 0.85rem;
+    color: #999999;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+.performance-security {
+    font-size: 0.85rem;
+    color: #666666;
+}
+
+.performance-security a {
+    color: #0066cc;
+    text-decoration: none;
+}
+
+.performance-security a:hover {
+    text-decoration: underline;
+}
+
+/* 顔認証関連のスタイル */
+.face-auth-container {
+    position: relative;
+    width: 300px;
+    height: 225px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #000;
+}
+
+#video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.face-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.face-frame {
+    width: 150px;
+    height: 150px;
+    border: 3px solid #f48120;
+    border-radius: 50%;
+    background: transparent;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        border-color: #f48120;
+        transform: scale(1);
+    }
+    50% {
+        border-color: #ff9f40;
+        transform: scale(1.05);
+    }
+    100% {
+        border-color: #f48120;
+        transform: scale(1);
+    }
+}
+
+.face-frame.detected {
+    border-color: #28a745;
+    animation: none;
+}
+
+.success-message {
+    color: #28a745;
+    font-weight: bold;
+    margin-top: 15px;
+}
+
+.error-message {
+    color: #dc3545;
+    font-weight: bold;
+    margin-top: 15px;
+}
+
+/* 認証成功時のアニメーション */
+.auth-success .check-content {
+    animation: success-fade 0.5s ease-in-out;
+}
+
+@keyframes success-fade {
+    0% {
+        background-color: #f8f9fa;
+    }
+    50% {
+        background-color: #d4edda;
+    }
+    100% {
+        background-color: #f8f9fa;
+    }
+}
+
+/* レスポンシブデザイン */
+@media (max-width: 768px) {
+    .container {
+        padding: 20px;
+    }
+    
+    h1 {
+        font-size: 2rem;
+    }
+    
+    .security-check {
+        padding: 30px 20px;
+    }
+    
+    .check-content {
+        flex-direction: column;
+        gap: 30px;
+    }
+    
+    .face-auth-container {
+        width: 250px;
+        height: 188px;
+    }
+    
+    .face-frame {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .footer {
+        flex-direction: column;
+        text-align: center;
+    }
+}
