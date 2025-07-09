@@ -3,6 +3,8 @@ let capturedFaces = global.capturedFaces || [];
 global.capturedFaces = capturedFaces;
 
 export default function handler(req, res) {
+    console.log('Capture API called:', req.method, req.url, 'Body:', req.body);
+    
     // CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -44,9 +46,11 @@ export default function handler(req, res) {
             });
         } catch (error) {
             console.error('画像受信エラー:', error);
+            console.error('Request body:', req.body);
             res.status(500).json({
                 success: false,
-                error: '画像の保存に失敗しました'
+                error: '画像の保存に失敗しました',
+                details: error.message
             });
         }
     } else if (req.method === 'GET') {
