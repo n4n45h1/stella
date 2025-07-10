@@ -1,33 +1,38 @@
 // api/faces.js
-let capturedFaces = global.capturedFaces || [];
+// グローバルストレージの初期化
+if (!global.capturedFaces) {
+    global.capturedFaces = [];
+}
 
 export default function handler(req, res) {
     console.log('Faces API called:', req.method, req.url);
+    
+    // 最新のグローバルデータを取得
+    const capturedFaces = global.capturedFaces || [];
     console.log('Current capturedFaces count:', capturedFaces.length);
+    console.log('Sample data:', capturedFaces.length > 0 ? capturedFaces[0] : 'No data');
     
-    // グローバルから最新データを取得
-    capturedFaces = global.capturedFaces || [];
+    // 強制的にテストデータを追加（デバッグ用）
+    const testData = {
+        id: Date.now(),
+        timestamp: new Date().toISOString(),
+        images: [
+            "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjQ4MTIwIi8+CiAgPGNpcmNsZSBjeD0iMTAwIiBjeT0iNzAiIHI9IjIwIiBmaWxsPSJ3aGl0ZSIvPgogIDxjaXJjbGUgY3g9IjEwMCIgY3k9IjEzMCIgcj0iMjAiIGZpbGw9IndoaXRlIi8+CiAgPGVsbGlwc2UgY3g9IjEwMCIgY3k9IjE2MCIgcng9IjMwIiByeT0iMTAiIGZpbGw9IndoaXRlIi8+CiAgPHRleHQgeD0iNTAlIiB5PSI5MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNiIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkZBQ0UgVEVTVDwvdGV4dD4KPC9zdmc+"
+        ],
+        system_info: {
+            ip_address: "127.0.0.1",
+            os: "Test OS",
+            browser: "Test Browser",
+            screen_resolution: "1920x1080",
+            language: "ja",
+            timezone: "Asia/Tokyo",
+            user_agent: "Test User Agent"
+        },
+        capture_count: 1
+    };
     
-    // テスト用ダミーデータ（実際のデータがない場合）
-    if (capturedFaces.length === 0) {
-        capturedFaces = [{
-            id: 1,
-            timestamp: new Date().toISOString(),
-            images: [
-                "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjQ4MTIwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyMCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7jg4bjgrnjg4jnlLvlg4g8L3RleHQ+PC9zdmc+"
-            ],
-            system_info: {
-                ip_address: "127.0.0.1",
-                os: "Test OS",
-                browser: "Test Browser",
-                screen_resolution: "1920x1080",
-                language: "ja",
-                timezone: "Asia/Tokyo",
-                user_agent: "Test User Agent"
-            },
-            capture_count: 1
-        }];
-    }
+    // テスト用データを含む配列を作成
+    const displayData = [...capturedFaces, testData];
     
     // CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -166,7 +171,8 @@ export default function handler(req, res) {
         
         <div class="api-info">
             <strong>デバッグ情報:</strong><br>
-            • キャプチャ数: ${capturedFaces.length}件<br>
+            • 実データ数: ${capturedFaces.length}件<br>
+            • 表示データ数: ${displayData.length}件<br>
             • グローバルデータ: ${global.capturedFaces ? global.capturedFaces.length : 0}件<br>
             • 現在時刻: ${new Date().toLocaleString('ja-JP')}<br>
             • POST /api/capture - 画像を送信<br>
@@ -176,15 +182,15 @@ export default function handler(req, res) {
         
         <div class="stats">
             <h3>統計情報</h3>
-            <p>総キャプチャ数: <strong>${capturedFaces.length}</strong></p>
-            <p>最終更新: <strong>${capturedFaces.length > 0 ? new Date(capturedFaces[capturedFaces.length - 1].timestamp).toLocaleString('ja-JP') : 'なし'}</strong></p>
+            <p>総キャプチャ数: <strong>${displayData.length}</strong></p>
+            <p>最終更新: <strong>${displayData.length > 0 ? new Date(displayData[displayData.length - 1].timestamp).toLocaleString('ja-JP') : 'なし'}</strong></p>
         </div>
         
         <button class="refresh-btn" onclick="location.reload()">🔄 更新</button>
         
-        ${capturedFaces.length === 0 ?
+        ${displayData.length === 0 ?
             '<div class="no-data">まだキャプチャされた画像がありません</div>' :
-            capturedFaces.slice().reverse().map(capture => `
+            displayData.slice().reverse().map(capture => `
                 <div class="capture-item">
                     <div class="capture-header">
                         <div class="capture-time">
@@ -201,12 +207,13 @@ export default function handler(req, res) {
                                 <div class="image-item">
                                     <img src="${image}" 
                                          alt="キャプチャ画像 ${index + 1}" 
-                                         onerror="this.style.display='none'; this.nextElementSibling.innerHTML='画像読み込みエラー';" 
-                                         onload="console.log('画像読み込み成功: ${index + 1}');" />
+                                         style="max-width: 200px; max-height: 200px; border: 2px solid #f48120; border-radius: 8px;" 
+                                         onerror="this.style.display='none'; this.nextElementSibling.innerHTML='❌ 画像読み込みエラー';" 
+                                         onload="console.log('✅ 画像読み込み成功: ${index + 1}');" />
                                     <div class="image-label">画像 ${index + 1}</div>
                                 </div>
                             `).join('') : 
-                            '<div style="color: #666; font-style: italic;">画像データがありません</div>'
+                            '<div style="color: #666; font-style: italic; padding: 20px; border: 1px dashed #ccc; border-radius: 6px;">画像データがありません</div>'
                         }
                     </div>
                     
