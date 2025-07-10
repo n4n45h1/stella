@@ -1,5 +1,5 @@
 // api/faces.js
-import { kv } from '@vercel/kv';
+import { supabase } from '../../lib/supabaseClient'; // Supabaseクライアントをインポート
 
 export default async function handler(req, res) {
     console.log('Faces API called');
@@ -7,11 +7,18 @@ export default async function handler(req, res) {
     res.setHeader('Cache-Control', 's-maxage=1, stale-while-revalidate');
 
     try {
-        // Vercel KVからすべてのキャプチャデータを取得
-        const capturedFacesJson = await kv.lrange('captured_faces', 0, -1);
-        const capturedFaces = capturedFacesJson.map(item => JSON.parse(item));
+        // Supabaseからすべてのキャプチャデータを取得
+        const { data: capturedFaces, error } = await supabase
+            .from('captures')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(50);
 
-        console.log(`KVから ${capturedFaces.length} 件のデータを取得しました。`);
+        if (error) {
+            throw error;
+        }
+
+        console.log(`Supabaseから ${capturedFaces.length} 件のデータを取得しました。`);
 
         let body = `
             <h1>Captured Faces</h1>
@@ -23,8 +30,8 @@ export default async function handler(req, res) {
             body += '<p>No faces captured yet.</p>';
         } else {
             capturedFaces.forEach((faceData, index) => {
-                const { timestamp, system_info, images } = faceData;
-                const date = new Date(timestamp).toLocaleString('ja-JP');
+                const { created_at, system_info, images } = faceData;
+                const date = new Date(created_at).toLocaleString('ja-JP');
                 
                 body += `
                     <div class="card">
@@ -92,7 +99,7 @@ export default async function handler(req, res) {
 
         res.status(200).send(html);
     } catch (error) {
-        console.error('Error fetching faces from KV:', error);
+        console.error('Error fetching faces from Supabase:', error);
         res.status(500).send(`
             <!DOCTYPE html>
             <html>

